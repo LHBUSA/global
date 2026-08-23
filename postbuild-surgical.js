@@ -1,0 +1,43 @@
+const fs=require('fs'),path=require('path');
+const file=path.join(__dirname,'dist','index.html');
+if(!fs.existsSync(file)) throw new Error('dist/index.html missing');
+let html=fs.readFileSync(file,'utf8');
+
+// NAV: preserve brand/logo and existing links; only extend them.
+html=html.replace(
+  '<div class="navlinks"><a href="#coverage">Coverage</a><a href="#expansion">Expansion</a><a href="#layers">Data Layers</a><a href="#ecosystem">Ecosystem</a><a href="https://propdata.proptechusa.ai/docs">Docs</a><a href="#global-pricing">Pricing</a></div>',
+  '<div class="navlinks"><a href="#coverage">Coverage</a><a href="#expansion">Expansion</a><a href="#property-graph">Property Graph</a><a href="#shield-network">Shield Network</a><a href="#global-pricing">Pricing</a><a href="https://propdata.proptechusa.ai/docs">Docs</a></div>'
+);
+html=html.replace(
+  '<div class="navactions"><a class="status"',
+  '<div class="navactions"><a class="workspace-btn" href="https://propdata.proptechusa.ai/dashboard.html">API Workspace</a><a class="status"'
+);
+html=html.replace(
+  '<a href="#ecosystem">PropTechUSA.ai Ecosystem</a>',
+  '<a href="#property-graph">Property Graph</a><a href="#shield-network">Shield Network</a><a href="https://propdata.proptechusa.ai/dashboard.html">API Workspace</a>'
+);
+
+const shieldSection=`<section id="shield-network" class="shield-network-section"><div class="wrap"><header class="sectionHead"><div><div class="eyebrow">PropTechUSA.ai shield network</div><h2>One global backbone.<br><em>Multiple production surfaces.</em></h2></div><p>Global coverage is not a standalone database. It connects directly into the PropTechUSA.ai operating stack—from property intelligence and bespoke data delivery to government infrastructure, risk monitoring, developer tooling and the customer workspace.</p></header><div class="shield-network-shell panel"><div class="shield-grid"><a class="shield-node node-propdata" href="https://propdata.proptechusa.ai/"><span class="node-kicker">FLAGSHIP API</span><b>PropData</b><small>Property · parcel · market · rent · valuation · geospatial</small></a><a class="shield-node node-data" href="https://data.proptechusa.ai/"><span class="node-kicker">CUSTOM DELIVERY</span><b>Data Solutions</b><small>Bulk datasets · custom schemas · integration-specific delivery</small></a><div class="shield-core"><div class="shield-core-mark"><span class="brandshield"></span></div><span>GLOBAL</span><strong>Property Intelligence Network</strong><small>U.S. · Great Britain · New Zealand · expanding</small></div><a class="shield-node node-gov" href="https://gov.proptechusa.ai/"><span class="node-kicker">PUBLIC SECTOR</span><b>Government Infrastructure</b><small>API-first county and agency data infrastructure</small></a><a class="shield-node node-secure" href="https://propsecure.proptechusa.ai/"><span class="node-kicker">RISK LAYER</span><b>PropSecure</b><small>Ownership events · lien/default signals · monitoring</small></a><a class="shield-node node-dev" href="https://propdata.proptechusa.ai/docs"><span class="node-kicker">DEVELOPER LAYER</span><b>REST + MCP + AI</b><small>Production APIs · agent workflows · documentation</small></a><a class="shield-node node-workspace" href="https://propdata.proptechusa.ai/dashboard.html"><span class="node-kicker">CUSTOMER CONTROL</span><b>API Workspace</b><small>Keys · usage · access · production workflow</small></a></div><div class="shield-network-rail"><span>Independent infrastructure</span><span>Source-native identity</span><span>Provenance-aware</span><span>Fail-closed facts</span><span>Global coverage growing</span></div></div></div></section>`;
+
+if(!html.includes('id="shield-network"')){
+  html=html.replace('<section id="ecosystem">',shieldSection+'<section id="ecosystem">');
+}
+
+// Keep the existing ecosystem content/images untouched, but demote its visual role under the new network.
+html=html.replace('<section id="ecosystem">','<section id="ecosystem" class="ecosystem-support-section">');
+
+// FOOTER: preserve the existing footer and logo, only add missing operational paths.
+html=html.replace(
+  '<div><h4>Developers</h4><a href="https://propdata.proptechusa.ai/docs">API Docs</a><a href="https://propdata.proptechusa.ai/dashboard.html">Workspace</a><a href="https://www.proptechusa.ai/status">Status</a><a href="https://propdata.proptechusa.ai/">MCP + AI</a></div>',
+  '<div><h4>Developers</h4><a href="https://propdata.proptechusa.ai/docs">API Docs</a><a href="https://propdata.proptechusa.ai/dashboard.html">API Workspace</a><a href="https://www.proptechusa.ai/status">API Status</a><a href="https://propdata.proptechusa.ai/">REST + MCP + AI</a><a href="https://billing.stripe.com/p/login/cNi3cv2vY7em3lr4oj7wA00" rel="nofollow">Manage Billing</a></div>'
+);
+html=html.replace(
+  '<div><h4>Global</h4><a href="#coverage">Coverage</a><a href="#expansion">Expansion</a><a href="#layers">Data layers</a><a href="#book">Request a market</a></div>',
+  '<div><h4>Global</h4><a href="#coverage">Live Coverage</a><a href="#expansion">Expansion Engine</a><a href="#property-graph">Property Graph</a><a href="#shield-network">Shield Network</a><a href="#global-pricing">Global Pricing</a></div>'
+);
+
+const css=`<style id="surgical-global-upgrade">.workspace-btn{display:none;min-height:38px;align-items:center;justify-content:center;padding:0 12px;border:1px solid rgba(91,187,255,.28);border-radius:10px;text-decoration:none;font-size:10px;font-weight:800;color:#dff5ff;background:rgba(6,28,51,.64)}.shield-network-section{position:relative;background:radial-gradient(circle at 50% 48%,rgba(21,132,255,.14),transparent 34%)}.shield-network-shell{padding:20px;position:relative;overflow:hidden}.shield-network-shell:before{content:'';position:absolute;inset:8% 15%;border-radius:50%;border:1px solid rgba(68,180,255,.12);box-shadow:0 0 120px rgba(14,128,255,.08);pointer-events:none}.shield-grid{position:relative;z-index:1;display:grid;gap:10px}.shield-node,.shield-core{min-height:150px;border:1px solid rgba(91,187,255,.14);border-radius:15px;background:linear-gradient(180deg,rgba(9,33,58,.82),rgba(4,18,33,.92));padding:18px;text-decoration:none}.shield-node{display:flex;flex-direction:column;justify-content:flex-end;transition:.2s ease}.shield-node:hover{border-color:rgba(91,187,255,.42);transform:translateY(-2px);box-shadow:0 18px 45px rgba(0,91,194,.16)}.node-kicker{font-size:8px;letter-spacing:.14em;color:#61ccff;font-weight:850}.shield-node b{font-size:19px;margin:7px 0 5px}.shield-node small{color:#829ab1;line-height:1.55}.shield-core{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 42%,rgba(17,125,246,.24),transparent 42%),linear-gradient(180deg,rgba(8,32,57,.94),rgba(3,15,28,.98));border-color:rgba(94,198,255,.3);box-shadow:0 26px 85px rgba(0,102,224,.2)}.shield-core-mark{height:82px;display:grid;place-items:center;margin-bottom:9px}.shield-core-mark .brandshield{width:66px;height:76px}.shield-core>span{font-size:9px;letter-spacing:.2em;color:#61ccff;font-weight:900}.shield-core strong{font-size:23px;line-height:1.08;margin:8px 0}.shield-core small{color:#90a8c0}.shield-network-rail{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:15px}.shield-network-rail span{font-size:9px;padding:7px 9px;border:1px solid rgba(255,255,255,.08);border-radius:999px;color:#9db4c9;background:rgba(3,15,28,.65)}.ecosystem-support-section{padding-top:34px}.ecosystem-support-section .sectionHead{margin-bottom:20px}@media(min-width:700px){.workspace-btn{display:inline-flex}.shield-grid{grid-template-columns:1fr 1fr}.shield-core{grid-column:1/-1;grid-row:1}.shield-node{min-height:165px}}@media(min-width:1040px){.navlinks{gap:1px}.navlinks a{padding:10px 8px}.shield-grid{grid-template-columns:1fr 1.15fr 1fr;grid-template-rows:1fr 1fr}.shield-core{grid-column:2;grid-row:1/3;min-height:390px}.node-propdata{grid-column:1;grid-row:1}.node-data{grid-column:1;grid-row:2}.node-gov{grid-column:3;grid-row:1}.node-secure{grid-column:3;grid-row:2}.node-dev{grid-column:1;grid-row:3}.node-workspace{grid-column:3;grid-row:3}.shield-core{grid-row:1/4}.shield-node{min-height:150px}.shield-network-shell{padding:30px}}</style>`;
+html=html.replace('</head>',css+'</head>');
+
+fs.writeFileSync(file,html);
+console.log('postbuild-surgical: preserved hero/logo/images; upgraded nav, shield network, workspace, and footer');
