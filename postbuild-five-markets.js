@@ -23,6 +23,7 @@ function patchHtml(path) {
     ['Four live markets.<br><em>And counting.</em>', 'Five live markets.<br><em>And counting.</em>'],
     ['the U.S., Great Britain, New Zealand and\n              Australia are live today—225M+ property and parcel identities,', 'the U.S., Great Britain, New Zealand, Australia and\n              Estonia are live today—225M+ property and parcel identities,'],
     ['the U.S., Great Britain, New Zealand and Australia are live today—225M+ property and parcel identities,', 'the U.S., Great Britain, New Zealand, Australia and Estonia are live today—225M+ property and parcel identities,'],
+    ['The U.S., Great Britain, New Zealand and Australia are live today.', 'The U.S., Great Britain, New Zealand, Australia and Estonia are live today.'],
     ['current global coverage across the United States, Great Britain, New Zealand and Australia.', 'current global coverage across the United States, Great Britain, New Zealand, Australia and Estonia.'],
     ['"dateModified": "2026-08-25"', '"dateModified": "2026-08-26"'],
   ]);
@@ -73,6 +74,7 @@ function patchHtml(path) {
     '<strong>4</strong><span>live national footprints</span>',
     '225M+ identities · 4 live markets',
     'Four live markets.<br><em>And counting.</em>',
+    'The U.S., Great Britain, New Zealand and Australia are live today.',
   ];
   for (const marker of stale) if (s.includes(marker)) throw new Error(`${path}: stale four-market marker remains: ${marker}`);
   if (!s.includes('U.S. + GB + NZ + AU + EE live')) throw new Error(`${path}: five-market live rail missing`);
