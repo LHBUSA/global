@@ -1,1 +1,1 @@
-{"name":"proptechusa-global","private":true,"scripts":{"build":"node build.js && node postbuild.js && node postbuild-pricing.js && node postbuild-surgical.js && node postbuild-estonia.js"}}
+{"name":"proptechusa-global","private":true,"scripts":{"build":"node build.js && node postbuild.js && node postbuild-pricing.js && node postbuild-surgical.js && node postbuild-five-markets.js"}}
