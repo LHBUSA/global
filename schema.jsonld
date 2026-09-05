@@ -13,45 +13,49 @@
     {
       "@type": "Brand",
       "@id": "https://global.proptechusa.ai/#brand",
-      "name": "Global PropTechUSA.ai",
+      "name": "PropData Global",
       "url": "https://global.proptechusa.ai/",
-      "slogan": "Property intelligence. Without borders."
+      "slogan": "The property intelligence layer that lets AI understand the world's real estate."
     },
     {
       "@type": "WebSite",
       "@id": "https://global.proptechusa.ai/#website",
       "url": "https://global.proptechusa.ai/",
-      "name": "Global PropTechUSA.ai",
+      "name": "PropData Global",
       "publisher": { "@id": "https://www.proptechusa.ai/#organization" }
     },
     {
       "@type": "WebPage",
       "@id": "https://global.proptechusa.ai/#webpage",
       "url": "https://global.proptechusa.ai/",
-      "name": "Global Property Intelligence | PropTechUSA.ai",
-      "description": "225M+ property and parcel identities across the United States, Great Britain, New Zealand and Australia—and counting.",
-      "dateModified": "2026-08-25",
+      "name": "PropData Global | 400M+ Property Records · 7B+ Data Points",
+      "description": "PropData Global spans 400M+ property and parcel records and 7B+ normalized property data points across seven country-native products: United States, Great Britain, New Zealand, Australia, Estonia, France and Spain.",
+      "dateModified": "2026-09-05",
       "isPartOf": { "@id": "https://global.proptechusa.ai/#website" },
       "about": { "@id": "https://global.proptechusa.ai/#service" }
     },
     {
       "@type": "Service",
       "@id": "https://global.proptechusa.ai/#service",
-      "name": "Global Property Intelligence Infrastructure",
+      "name": "PropData Global Property Intelligence Network",
       "provider": { "@id": "https://www.proptechusa.ai/#organization" },
-      "serviceType": "Property, parcel, title, address and geospatial data infrastructure",
+      "serviceType": "Country-native property, parcel, title, address, building, transaction and geospatial intelligence infrastructure",
+      "description": "A governed global property intelligence layer spanning 400M+ property and parcel records and 7B+ normalized property data points, with source-native identities, explicit provenance, coverage states and truthful nulls.",
       "areaServed": [
         { "@type": "Country", "name": "United States" },
         { "@type": "Place", "name": "Great Britain" },
         { "@type": "Country", "name": "New Zealand" },
-        { "@type": "Country", "name": "Australia" }
+        { "@type": "Country", "name": "Australia" },
+        { "@type": "Country", "name": "Estonia" },
+        { "@type": "Country", "name": "France" },
+        { "@type": "Country", "name": "Spain" }
       ],
       "url": "https://global.proptechusa.ai/",
       "offers": {
-        "@type": "Offer",
-        "url": "https://propdata.proptechusa.ai/#pricing-preview",
-        "category": "PropData Scale and Enterprise",
-        "description": "Great Britain, New Zealand and Australia access is included with PropData Scale and Enterprise plans."
+        "@type": "OfferCatalog",
+        "name": "PropData country-native access",
+        "url": "https://global.proptechusa.ai/#access",
+        "description": "Self-serve country-native subscriptions are available in local currency. Multi-country, bulk, white-label and custom infrastructure are scoped through enterprise sales."
       }
     },
     {
@@ -59,7 +63,7 @@
       "contactType": "sales",
       "email": "sales@proptechusa.ai",
       "telephone": "+1-888-784-3881",
-      "url": "https://calendly.com/proptechusa/new-meeting-1"
+      "url": "https://calendly.com/proptechusa"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "name": "Global PropTechUSA.ai",
-  "short_name": "Global",
-  "description": "225M+ property and parcel identities across four live markets from PropTechUSA.ai.",
+  "name": "PropData Global",
+  "short_name": "PropData Global",
+  "description": "400M+ property and parcel records and 7B+ normalized property data points across seven country-native PropData products.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020812",
