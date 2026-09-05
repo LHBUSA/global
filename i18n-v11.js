@@ -157,11 +157,19 @@
   }
 
   function translatePricing(t) {
-    document.querySelectorAll('.plan-intent').forEach(el => { if (translations.en.planIntents[el.dataset.en || el.textContent.trim()]) { if (!el.dataset.en) el.dataset.en = el.textContent.trim(); el.textContent = t.planIntents[el.dataset.en] || el.dataset.en; } });
-    document.querySelectorAll('.plan-price span').forEach(el => el.textContent = t.month);
+    document.querySelectorAll('.plan-intent').forEach(el => {
+      const base = el.dataset.en || el.textContent.trim();
+      if (translations.en.planIntents[base]) {
+        if (!el.dataset.en) el.dataset.en = base;
+        const next = t.planIntents[el.dataset.en] || el.dataset.en;
+        if (el.textContent !== next) el.textContent = next;
+      }
+    });
+    document.querySelectorAll('.plan-price span').forEach(el => { if (el.textContent !== t.month) el.textContent = t.month; });
     document.querySelectorAll('.plan .btn').forEach(el => {
       if (!el.dataset.tier) el.dataset.tier = el.textContent.replace(/^[^A-Za-zÀ-ž]*?(Buy|Osta|Acheter|Comprar|Hoko)\s+/i,'').replace(/\s*→\s*$/,'').trim();
-      el.textContent = `${t.buy} ${el.dataset.tier} →`;
+      const next = `${t.buy} ${el.dataset.tier} →`;
+      if (el.textContent !== next) el.textContent = next;
     });
   }
 
@@ -204,8 +212,11 @@
 
   function boot() {
     installStyle(); installSwitcher(); applyLanguage(current);
-    const targets = [document.getElementById('marketSummary'), document.getElementById('plans')].filter(Boolean);
-    if (targets.length) new MutationObserver(()=>translatePricing(translations[current])).observe(document.getElementById('access'), {childList:true,subtree:true});
+    const plans = document.getElementById('plans');
+    if (plans) {
+      new MutationObserver(() => translatePricing(translations[current]))
+        .observe(plans, { childList: true, subtree: false });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
