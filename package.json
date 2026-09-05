@@ -1,1 +1,1 @@
-{"name":"proptechusa-global","private":true,"scripts":{"build":"node build-v8.js"}}
+{"name":"proptechusa-global","private":true,"scripts":{"build":"node build-v9.js"}}
