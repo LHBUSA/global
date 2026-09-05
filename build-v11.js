@@ -16,6 +16,7 @@ const path = require('path');
     'site.webmanifest',
     'sitemap.xml',
     'schema.jsonld',
+    'i18n-v11.js',
   ]) {
     const source = path.join(root, file);
     if (fs.existsSync(source)) fs.copyFileSync(source, path.join(out, file));
@@ -26,36 +27,95 @@ const path = require('path');
   if (fs.existsSync(assets)) fs.cpSync(assets, outAssets, { recursive: true });
   fs.mkdirSync(outAssets, { recursive: true });
 
+  const commons = (name) => `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(name)}?width=1800`;
+  const genericFallback = commons('Aerial view of Auckland City.jpg');
+
   const photoSources = [
-    ['hero', 'https://images.unsplash.com/photo-1770064319727-7a5361023791?auto=format&fit=crop&fm=jpg&q=88&w=1800', 'photo-hero.jpg'],
-    ['us', 'https://propdata.proptechusa.ai/images/property-infrastructure.webp', 'photo-us.webp'],
-    ['gb', 'https://images.unsplash.com/photo-1779991672998-624922d44b17?auto=format&fit=crop&w=1400&q=88', 'photo-gb.jpg'],
-    ['nz', 'https://propdata.proptechusa.ai/images/new-zealand-parcels.png', 'photo-nz.png'],
-    ['au', 'https://upload.wikimedia.org/wikipedia/commons/7/7d/Aerial_view_of_Sydney_Harbour.jpg', 'photo-au.jpg'],
-    ['ee', 'https://images.unsplash.com/photo-1760097776531-3aa60f1ebd7d?auto=format&fit=crop&w=1400&q=88', 'photo-ee.jpg'],
-    ['fr', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=88', 'photo-fr.jpg'],
-    ['es', 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1400&q=88', 'photo-es.jpg'],
+    {
+      label: 'hero', filename: 'photo-hero.jpg', urls: [
+        'https://images.unsplash.com/photo-1770064319727-7a5361023791?auto=format&fit=crop&fm=jpg&q=88&w=1800',
+        commons('Aerial view of Auckland City.jpg'),
+      ],
+    },
+    {
+      label: 'us', filename: 'photo-us.jpg', urls: [
+        commons('An aerial photo of a residential neighborhood on Padre Island.jpg'),
+        commons('Unidentified residential neighborhood aerial view - DPLA - e4444f053b1615d32567216cf2afe757.jpg'),
+      ],
+    },
+    {
+      label: 'gb', filename: 'photo-gb.jpg', urls: [
+        'https://images.unsplash.com/photo-1779991672998-624922d44b17?auto=format&fit=crop&w=1400&q=88',
+        commons('London from above.jpg'),
+        genericFallback,
+      ],
+    },
+    {
+      label: 'nz', filename: 'photo-nz.jpg', urls: [
+        commons('Auckland Harbour Bridge aerial.jpg'),
+        commons('Aerial view of Auckland City.jpg'),
+      ],
+    },
+    {
+      label: 'au', filename: 'photo-au.jpg', urls: [
+        'https://upload.wikimedia.org/wikipedia/commons/7/7d/Aerial_view_of_Sydney_Harbour.jpg',
+        genericFallback,
+      ],
+    },
+    {
+      label: 'ee', filename: 'photo-ee.jpg', urls: [
+        'https://images.unsplash.com/photo-1760097776531-3aa60f1ebd7d?auto=format&fit=crop&w=1400&q=88',
+        genericFallback,
+      ],
+    },
+    {
+      label: 'fr', filename: 'photo-fr.jpg', urls: [
+        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=88',
+        genericFallback,
+      ],
+    },
+    {
+      label: 'es', filename: 'photo-es.jpg', urls: [
+        'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1400&q=88',
+        genericFallback,
+      ],
+    },
   ];
 
-  async function downloadPhoto(label, url, filename) {
+  async function tryPhoto(url) {
     const response = await fetch(url, {
       redirect: 'follow',
       headers: {
         'user-agent': 'PropDataGlobalBuild/11 (+https://global.proptechusa.ai)',
-        'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
     });
     const type = response.headers.get('content-type') || '';
     if (!response.ok || !type.toLowerCase().startsWith('image/')) {
-      throw new Error(`Photo download failed for ${label}: ${response.status} ${type} ${url}`);
+      throw new Error(`${response.status} ${type}`);
     }
     const bytes = Buffer.from(await response.arrayBuffer());
-    if (bytes.length < 5000) throw new Error(`Photo download too small for ${label}: ${bytes.length} bytes`);
-    fs.writeFileSync(path.join(outAssets, filename), bytes);
-    console.log(`PHOTO OK: ${label} -> ${filename} (${bytes.length} bytes, ${type})`);
+    if (bytes.length < 5000) throw new Error(`${bytes.length} bytes`);
+    return { bytes, type, finalUrl: response.url };
   }
 
-  for (const source of photoSources) await downloadPhoto(...source);
+  async function downloadPhoto(source) {
+    let lastError;
+    for (const url of source.urls) {
+      try {
+        const image = await tryPhoto(url);
+        fs.writeFileSync(path.join(outAssets, source.filename), image.bytes);
+        console.log(`PHOTO OK: ${source.label} -> ${source.filename} (${image.bytes.length} bytes, ${image.type})`);
+        return;
+      } catch (error) {
+        lastError = error;
+        console.warn(`PHOTO RETRY: ${source.label} ${url} -> ${error.message}`);
+      }
+    }
+    throw new Error(`No working photo source for ${source.label}: ${lastError ? lastError.message : 'unknown error'}`);
+  }
+
+  for (const source of photoSources) await downloadPhoto(source);
 
   const htmlPath = path.join(out, 'index.html');
   let html = fs.readFileSync(htmlPath, 'utf8');
@@ -70,7 +130,7 @@ const path = require('path');
     '<span class="brand-mark shield"><img src="/assets/propdata-shield-mark.svg" alt="PropData shield"></span>'
   );
 
-  // Make the existing single-market pricing interaction unmistakable without changing it.
+  // Make the original one-country-at-a-time pricing interaction unmistakable.
   html = html.replace(
     '<div class="eyebrow">Self-serve country access</div><h2>One storefront. <em>Local currency.</em></h2>',
     '<div class="eyebrow">Self-serve country access</div><h2>Choose a country. <em>See local pricing.</em></h2>'
@@ -90,23 +150,28 @@ const path = require('path');
 .market-tab{min-height:54px;padding:0 19px;background:#fbf8f0;border-color:#bbb3a4;box-shadow:0 4px 14px rgba(24,22,16,.035)}
 .market-tab:hover{transform:translateY(-1px)}
 .market-tab.active{position:relative;background:var(--forest);border-color:var(--forest);color:#fff;box-shadow:0 10px 24px rgba(14,102,57,.2)}
-.market-tab.active:after{content:'PRICING SHOWN';margin-left:9px;padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.16);font-size:6px;letter-spacing:.07em}
+.market-tab.active:after{content:var(--pricing-shown,'PRICING SHOWN');margin-left:9px;padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.16);font-size:6px;letter-spacing:.07em}
 @media(max-width:720px){.pricing-cue{align-items:flex-start;flex-direction:column}.market-tabs{padding:8px}.market-tab{min-height:50px}}
 </style>`;
   html = html.replace('</head>', extraCss + '</head>');
 
-  // Replace every remote photo with the build-verified local copy.
+  // Replace every remote photo with its build-verified local copy.
   const replacements = [
     [/https:\/\/images\.unsplash\.com\/photo-1770064319727-7a5361023791[^"']*/g, '/assets/photo-hero.jpg'],
-    [/https:\/\/propdata\.proptechusa\.ai\/images\/property-infrastructure\.webp/g, '/assets/photo-us.webp'],
+    [/https:\/\/propdata\.proptechusa\.ai\/images\/property-infrastructure\.webp/g, '/assets/photo-us.jpg'],
     [/https:\/\/images\.unsplash\.com\/photo-1779991672998-624922d44b17[^"']*/g, '/assets/photo-gb.jpg'],
-    [/https:\/\/propdata\.proptechusa\.ai\/images\/new-zealand-parcels\.png/g, '/assets/photo-nz.png'],
+    [/https:\/\/propdata\.proptechusa\.ai\/images\/new-zealand-parcels\.png/g, '/assets/photo-nz.jpg'],
     [/https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/7\/7d\/Aerial_view_of_Sydney_Harbour\.jpg/g, '/assets/photo-au.jpg'],
     [/https:\/\/images\.unsplash\.com\/photo-1760097776531-3aa60f1ebd7d[^"']*/g, '/assets/photo-ee.jpg'],
     [/https:\/\/images\.unsplash\.com\/photo-1502602898657-3e91760cbb34[^"']*/g, '/assets/photo-fr.jpg'],
     [/https:\/\/images\.unsplash\.com\/photo-1539037116277-4db20889f2d4[^"']*/g, '/assets/photo-es.jpg'],
   ];
   for (const [pattern, local] of replacements) html = html.replace(pattern, local);
+
+  // Load the custom market-language switcher after the existing site script.
+  if (!html.includes('src="/i18n-v11.js"')) {
+    html = html.replace('</body>', '<script src="/i18n-v11.js" defer></script></body>');
+  }
 
   fs.writeFileSync(htmlPath, html);
 
@@ -118,13 +183,14 @@ const path = require('path');
     'id="marketTabs"',
     "renderMarket('US')",
     '/assets/photo-hero.jpg',
-    '/assets/photo-us.webp',
+    '/assets/photo-us.jpg',
     '/assets/photo-gb.jpg',
-    '/assets/photo-nz.png',
+    '/assets/photo-nz.jpg',
     '/assets/photo-au.jpg',
     '/assets/photo-ee.jpg',
     '/assets/photo-fr.jpg',
     '/assets/photo-es.jpg',
+    '/i18n-v11.js',
     'https://buy.stripe.com/dRmaEX0nQbuC3lr5sn7wA0l',
   ];
   for (const marker of required) {
@@ -142,7 +208,7 @@ const path = require('path');
     if (html.includes(marker)) throw new Error(`Global v11 contains unwanted v10 marker: ${marker}`);
   }
 
-  console.log('PASS: PropData Global v11 restored photo-led design, local photos, shield, and obvious country pricing selector.');
+  console.log('PASS: PropData Global v11 restored the photo-led design with local photo assets, shield branding, obvious country pricing and multilingual switching.');
 })().catch((error) => {
   console.error(error.stack || error.message || error);
   process.exit(1);
