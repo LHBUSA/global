@@ -123,6 +123,13 @@ const path = require('path');
   const htmlPath = path.join(out, 'index.html');
   let html = fs.readFileSync(htmlPath, 'utf8');
 
+  // The site has its own deterministic language switcher. Keep browser/Google
+  // auto-translation from rewriting the same DOM and fighting our i18n state.
+  html = html.replace('<html lang="en">', '<html lang="en" translate="no" class="notranslate">');
+  if (!html.includes('<meta name="google" content="notranslate">')) {
+    html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="google" content="notranslate">');
+  }
+
   // Canonical PropData shield in header/footer.
   html = html.replace(
     '<span class="brand-mark">PD</span>',
@@ -181,6 +188,8 @@ const path = require('path');
 
   const required = [
     'propdata-shield-mark.svg',
+    '<html lang="en" translate="no" class="notranslate">',
+    '<meta name="google" content="notranslate">',
     'Choose a country. <em>See local pricing.</em>',
     'SELECT YOUR MARKET',
     'Click a country below to load its pricing',
