@@ -45,7 +45,7 @@ const path = require('path');
     },
     {
       label: 'gb', filename: 'photo-gb.jpg', urls: [
-        'https://images.unsplash.com/photo-1779991672998-624922d44b17?auto=format&fit=crop&w=1400&q=88',
+        'https://images.unsplash.com/photo-1779991672998-624922d44b17?auto=format&fit=crop&fm=jpg&w=1400&q=88',
         commons('London from above.jpg'),
         genericFallback,
       ],
@@ -64,19 +64,19 @@ const path = require('path');
     },
     {
       label: 'ee', filename: 'photo-ee.jpg', urls: [
-        'https://images.unsplash.com/photo-1760097776531-3aa60f1ebd7d?auto=format&fit=crop&w=1400&q=88',
+        'https://images.unsplash.com/photo-1760097776531-3aa60f1ebd7d?auto=format&fit=crop&fm=jpg&w=1400&q=88',
         genericFallback,
       ],
     },
     {
       label: 'fr', filename: 'photo-fr.jpg', urls: [
-        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=88',
+        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&fm=jpg&w=1400&q=88',
         genericFallback,
       ],
     },
     {
       label: 'es', filename: 'photo-es.jpg', urls: [
-        'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1400&q=88',
+        'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&fm=jpg&w=1400&q=88',
         genericFallback,
       ],
     },
@@ -87,7 +87,7 @@ const path = require('path');
       redirect: 'follow',
       headers: {
         'user-agent': 'PropDataGlobalBuild/11 (+https://global.proptechusa.ai)',
-        accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        accept: 'image/jpeg,image/*;q=0.8,*/*;q=0.1',
       },
     });
     const type = response.headers.get('content-type') || '';
@@ -96,6 +96,9 @@ const path = require('path');
     }
     const bytes = Buffer.from(await response.arrayBuffer());
     if (bytes.length < 5000) throw new Error(`${bytes.length} bytes`);
+    if (!type.toLowerCase().includes('jpeg') && !type.toLowerCase().includes('jpg')) {
+      throw new Error(`Expected JPEG but received ${type}`);
+    }
     return { bytes, type, finalUrl: response.url };
   }
 
@@ -112,7 +115,7 @@ const path = require('path');
         console.warn(`PHOTO RETRY: ${source.label} ${url} -> ${error.message}`);
       }
     }
-    throw new Error(`No working photo source for ${source.label}: ${lastError ? lastError.message : 'unknown error'}`);
+    throw new Error(`No working JPEG photo source for ${source.label}: ${lastError ? lastError.message : 'unknown error'}`);
   }
 
   for (const source of photoSources) await downloadPhoto(source);
@@ -155,7 +158,7 @@ const path = require('path');
 </style>`;
   html = html.replace('</head>', extraCss + '</head>');
 
-  // Replace every remote photo with its build-verified local copy.
+  // Replace every remote photo with its build-verified local JPEG copy.
   const replacements = [
     [/https:\/\/images\.unsplash\.com\/photo-1770064319727-7a5361023791[^"']*/g, '/assets/photo-hero.jpg'],
     [/https:\/\/propdata\.proptechusa\.ai\/images\/property-infrastructure\.webp/g, '/assets/photo-us.jpg'],
@@ -168,9 +171,10 @@ const path = require('path');
   ];
   for (const [pattern, local] of replacements) html = html.replace(pattern, local);
 
-  // Load the custom market-language switcher after the existing site script.
+  // Load the custom language switcher, plus localized active-pricing status text.
   if (!html.includes('src="/i18n-v11.js"')) {
-    html = html.replace('</body>', '<script src="/i18n-v11.js" defer></script></body>');
+    const pricingStateScript = `<script>(function(){const labels={en:'PRICING SHOWN',et:'HIND KUVATUD',fr:'TARIF AFFICHÉ',es:'PRECIO MOSTRADO',mi:'KUA WHAKAATURIA TE UTU'};function sync(){const l=(document.documentElement.lang||'en').toLowerCase();document.documentElement.style.setProperty('--pricing-shown',JSON.stringify(labels[l]||labels.en));}sync();new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});})();</script>`;
+    html = html.replace('</body>', `<script src="/i18n-v11.js" defer></script>${pricingStateScript}</body>`);
   }
 
   fs.writeFileSync(htmlPath, html);
@@ -191,6 +195,7 @@ const path = require('path');
     '/assets/photo-fr.jpg',
     '/assets/photo-es.jpg',
     '/i18n-v11.js',
+    "fr:'TARIF AFFICHÉ'",
     'https://buy.stripe.com/dRmaEX0nQbuC3lr5sn7wA0l',
   ];
   for (const marker of required) {
@@ -208,7 +213,7 @@ const path = require('path');
     if (html.includes(marker)) throw new Error(`Global v11 contains unwanted v10 marker: ${marker}`);
   }
 
-  console.log('PASS: PropData Global v11 restored the photo-led design with local photo assets, shield branding, obvious country pricing and multilingual switching.');
+  console.log('PASS: PropData Global v11 restored the photo-led design with local JPEG assets, shield branding, obvious country pricing and multilingual switching.');
 })().catch((error) => {
   console.error(error.stack || error.message || error);
   process.exit(1);
