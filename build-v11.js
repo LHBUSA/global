@@ -17,6 +17,7 @@ const path = require('path');
     'sitemap.xml',
     'schema.jsonld',
     'i18n-v11.js',
+    'trust-badges.js',
   ]) {
     const source = path.join(root, file);
     if (fs.existsSync(source)) fs.copyFileSync(source, path.join(out, file));
@@ -182,6 +183,11 @@ const path = require('path');
   if (!html.includes('src="/i18n-v11.js"')) {
     const pricingStateScript = `<script>(function(){const labels={en:'PRICING SHOWN',et:'HIND KUVATUD',fr:'TARIF AFFICHÉ',es:'PRECIO MOSTRADO',mi:'KUA WHAKAATURIA TE UTU'};function sync(){const l=(document.documentElement.lang||'en').toLowerCase();document.documentElement.style.setProperty('--pricing-shown',JSON.stringify(labels[l]||labels.en));}sync();new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});})();</script>`;
     html = html.replace('</body>', `<script src="/i18n-v11.js" defer></script>${pricingStateScript}</body>`);
+  }
+
+  // Shared Mother AI verification and PropData infrastructure badges.
+  if (!html.includes('src="/trust-badges.js"')) {
+    html = html.replace('</body>', '<script src="/trust-badges.js" defer></script></body>');
   }
 
   fs.writeFileSync(htmlPath, html);
