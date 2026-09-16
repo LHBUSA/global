@@ -17,6 +17,7 @@ const path = require('path');
     'sitemap.xml',
     'schema.jsonld',
     'i18n-v11.js',
+    'trust-badges.js',
   ]) {
     const source = path.join(root, file);
     if (fs.existsSync(source)) fs.copyFileSync(source, path.join(out, file));
@@ -184,6 +185,12 @@ const path = require('path');
     html = html.replace('</body>', `<script src="/i18n-v11.js" defer></script>${pricingStateScript}</body>`);
   }
 
+  // Global already owns its canonical Mother AI badge. This helper only adds
+  // the PropData badge beside it and will not render a second Mother badge.
+  if (!html.includes('src="/trust-badges.js"')) {
+    html = html.replace('</body>', '<script src="/trust-badges.js" defer></script></body>');
+  }
+
   fs.writeFileSync(htmlPath, html);
 
   const required = [
@@ -204,6 +211,7 @@ const path = require('path');
     '/assets/photo-fr.jpg',
     '/assets/photo-es.jpg',
     '/i18n-v11.js',
+    '/trust-badges.js',
     "fr:'TARIF AFFICHÉ'",
     'https://buy.stripe.com/dRmaEX0nQbuC3lr5sn7wA0l',
   ];
